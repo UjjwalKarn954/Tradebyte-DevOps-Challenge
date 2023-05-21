@@ -40,18 +40,35 @@ jobs:
           push: true
           tags: ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
 
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-latest
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Deploy to AWS
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.AWS_HOST }}
-  #         username: ${{ secrets.AWS_USERNAME }}
-  #         key: ${{ secrets.AWS_PRIVATE_KEY }}
-  #         script: |
-  #           ssh -i ${{ secrets.AWS_PRIVATE_KEY }} username@public-ip "docker stop my-python-app || true"
-  #           ssh -i ${{ secrets.AWS_PRIVATE_KEY }} username@public-ip "docker rm my-python-app || true"
-  #           ssh -i ${{ secrets.AWS_PRIVATE_KEY }} username@public-ip "docker run -d -p 8000:8000 --name my-python-app my-python-app"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Copy deploy/ to EC2 instance
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SOURCE: "deploy/"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: /home/ubuntu/
+          SCRIPT_BEFORE: |
+            whoami
+            ls -al
+          SCRIPT_AFTER: |
+            whoami
+            ls -al
+            echo $RSYNC_STDOUT
+
+      # - name: Deploy to AWS
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.REMOTE_HOST }}
+      #     username: ${{ secrets.REMOTE_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       sh deploy.sh
