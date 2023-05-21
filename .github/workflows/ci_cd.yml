@@ -38,7 +38,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/UjjwalKarn954/tradebyte-devops-challenge:latest
+          tags: ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
 
   # deploy:
   #   needs: build
