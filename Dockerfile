@@ -10,7 +10,7 @@ COPY requirements.txt .
 #Install the dependencies
 RUN pip install -r requirements.txt
 
-#Copy all the directories in the container
+#Copy all the content in the container
 COPY . .
 
 #Expose the port

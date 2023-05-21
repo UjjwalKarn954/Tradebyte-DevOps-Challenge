@@ -9,17 +9,11 @@ services:
       - PORT=8000
       - HOST=localhost
       - PYTHONUNBUFFERED=1
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: ghcr.io/ujjwalkarn954/tradebyte-devops-challenge
     ports:
       - 8000:8000
-    volumes:
-      - .:/app
     depends_on:
       - redis
-    
 
   redis:
     image: redis:latest
