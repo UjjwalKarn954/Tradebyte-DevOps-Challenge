@@ -36,7 +36,17 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_READ_WRITE_TOKEN }}
 
+      - name: Build and push for push to master
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: |
+            ujjwalkarn954/tradebyte-devops-challenge:latest
+            ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
+
       - name: Docker meta
+        if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -46,15 +56,6 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
 
-      - name: Build and push for push to master
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          tags: |
-            ujjwalkarn954/tradebyte-devops-challenge:latest
-            ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
-
       - name: Build and push for tagged release
         if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
         uses: docker/build-push-action@v4
@@ -63,7 +64,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
 
   deploy-dev:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     needs: build
     runs-on: ubuntu-latest
 
