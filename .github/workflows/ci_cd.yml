@@ -5,9 +5,8 @@ on:
     branches:
       - master
 
-  release:
-    types: [published]
-
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
@@ -38,14 +37,34 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_READ_WRITE_TOKEN }}
 
-      - name: Build and push
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ujjwalkarn954/tradebyte-devops-challenge
+            ghcr.io/ujjwalkarn954/tradebyte-devops-challenge
+          tags: |
+            type=semver,pattern={{version}}
+
+      - name: Build and push for push to master
+        if: ${{ github.event_name == 'push' && github.ref == "refs/head/master" }}
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
+          tags: |
+            ujjwalkarn954/tradebyte-devops-challenge:latest
+            ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
+
+      - name: Build and push for tagged release
+        if: ${{ github.event_name == 'push' }} && contains(github.ref, 'refs/tags/')
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
 
   deploy-dev:
-    if: ${{ github.event_name == 'push'}}
+    if: ${{ github.event_name == 'push' && github.ref == "refs/head/master" }}
     needs: build
     runs-on: ubuntu-latest
 
@@ -76,38 +95,38 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker-compose -p dev -f docker-compose.dev.yml up -d
+            TAG=latest docker-compose -p dev -f docker-compose.yml -f docker-compose.dev.yml up -d
 
   deploy-prod:
-      if: ${{ github.event_name == 'release'}}
-      needs: build
-      runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }} && contains(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        - name: Copy deploy/ to EC2 instance
-          uses: easingthemes/ssh-deploy@main
-          env:
-            SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-            SOURCE: "deploy/"
-            REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-            REMOTE_USER: ${{ secrets.REMOTE_USER }}
-            TARGET: /home/ubuntu/
-            SCRIPT_BEFORE: |
-              whoami
-              ls -al
-            SCRIPT_AFTER: |
-              whoami
-              ls -al
-              echo $RSYNC_STDOUT
+      - name: Copy deploy/ to EC2 instance
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SOURCE: "deploy/"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: /home/ubuntu/
+          SCRIPT_BEFORE: |
+            whoami
+            ls -al
+          SCRIPT_AFTER: |
+            whoami
+            ls -al
+            echo $RSYNC_STDOUT
 
-        - name: Deploy to AWS
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.REMOTE_HOST }}
-            username: ${{ secrets.REMOTE_USER }}
-            key: ${{ secrets.SSH_PRIVATE_KEY }}
-            script: |
-              docker-compose -p prod -f docker-compose.prod.yml up -d
+      - name: Deploy to AWS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            TAG=$GITHUB_REF_NAME docker-compose -p prod  -f docker-compose.yml -f docker-compose.prod.yml up -d

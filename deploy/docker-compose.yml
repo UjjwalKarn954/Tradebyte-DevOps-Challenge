@@ -1,0 +1,17 @@
+version: '3'
+services:
+  python-app:
+    environment:
+      - REDIS_DB=0
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
+      - PORT=8000
+      - HOST=localhost
+      - PYTHONUNBUFFERED=1
+    image: ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:${TAG}
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    
