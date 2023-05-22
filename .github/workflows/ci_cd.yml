@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-
     tags:
       - "v*.*.*"
 
@@ -48,7 +47,7 @@ jobs:
             type=semver,pattern={{version}}
 
       - name: Build and push for push to master
-        if: ${{ github.event_name == 'push' && github.ref == "refs/head/master" }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -64,7 +63,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
 
   deploy-dev:
-    if: ${{ github.event_name == 'push' && github.ref == "refs/head/master" }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}
     needs: build
     runs-on: ubuntu-latest
 
