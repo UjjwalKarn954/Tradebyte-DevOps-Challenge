@@ -42,7 +42,6 @@ jobs:
         with:
           push: true
           tags: |
-            ujjwalkarn954/tradebyte-devops-challenge:latest
             ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
 
       - name: Docker meta
@@ -51,7 +50,6 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ujjwalkarn954/tradebyte-devops-challenge
             ghcr.io/ujjwalkarn954/tradebyte-devops-challenge
           tags: |
             type=semver,pattern={{version}}
