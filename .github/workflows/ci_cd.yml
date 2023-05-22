@@ -47,7 +47,7 @@ jobs:
             type=semver,pattern={{version}}
 
       - name: Build and push for push to master
-        if: github.event_name == 'push' && github.ref == 'refs/head/master'
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -56,7 +56,7 @@ jobs:
             ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest
 
       - name: Build and push for tagged release
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -97,7 +97,7 @@ jobs:
             TAG=latest docker-compose -p dev -f docker-compose.yml -f docker-compose.dev.yml up -d
 
   deploy-prod:
-    if: ${{ github.event_name == 'push' }} && contains(github.ref, 'refs/tags/')
+    if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
     needs: build
     runs-on: ubuntu-latest
 
