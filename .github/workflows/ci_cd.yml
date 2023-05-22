@@ -126,5 +126,7 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: GITHUB_REF_NAME
           script: |
+            echo $GITHUB_REF_NAME
             TAG=$GITHUB_REF_NAME docker-compose -p prod  -f docker-compose.yml -f docker-compose.prod.yml up -d
