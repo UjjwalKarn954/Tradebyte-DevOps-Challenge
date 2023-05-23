@@ -81,6 +81,74 @@ You can run the tests by using:
 python tests/test.py
 ```
 
+
+
+# DevOps Challenge Solution
+
+### Tools and technologies used:
+ - Docker: For contenrization
+ - Docker-compose: For running multiple containers
+ - Github Actions: For CI/CD 
+
+### Prerequisites:
+ - Docker 
+ - Docker Compose
+ - Python
+
+### Approach Followed:
+ - Create Dockerfile to containerize the python-app
+ - Configure docker-compose to run python-app as well as redis
+ - Test locally
+    - create docker image 
+    - create docker container
+    - running docker container
+ - Configiure CI/CD pipeline
+ - Login to EC2 instance
+ - Install server on EC2
+ - Deploy to dev on push to master
+ - Deploy tp prod on release
+
+
+### Server installation approach:
+- Docker install
+- Made necessary changes to run docker without sudo
+
+
+## Commands to run locally:
+ - To build image:
+   ```bash
+   $docker build -t <image-name:tag> .
+   $docker build -t ghcr.io/ujjwalkarn954/tradebyte-devops-challenge:latest .
+   ```
+
+ - To Run the container using docker compose:
+   - For prod
+   ```bash
+   $export GITHUB_REF_NAME=v1.0.1 
+   $TAG=${GITHUB_REF_NAME#v} docker-compose -p prod -f docker-compose.yml -f docker-compose.prod.yml up -d
+   ``` 
+
+   - For dev
+   ```bash
+   $TAG=latest docker-compose -p dev -f docker-compose.yml -f docker-compose.dev.yml up -d
+   ```
+
+ - To check if the containers are up
+   Either run [ $docker ps ] or check in the docker-hub
+
+ - To stop the docker 
+   - For prod
+   ```bash
+   $docker-compose -p prod down
+   ```
+
+   - For dev
+   ```bash
+   $docker-compose -p dev down
+   ```
+
+
+
 ## Contributing
 
 We love contributions from everyone. By participating in this project, you agree to abide by our [code of conduct](https://tradebyte.github.io/Code-of-Conduct/).
